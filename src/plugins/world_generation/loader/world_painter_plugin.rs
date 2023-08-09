@@ -2,6 +2,8 @@ use bevy::prelude::*;
 use bevy::prelude::Commands;
 use rand::Rng;
 
+use crate::plugins::world_generation::{world_plugin::{Worlds, self}, level_plugin::Level};
+
 const GRID_SIZE: usize = 10; // Adjust this to change the grid size
 
 #[derive(Component)]
@@ -18,8 +20,25 @@ impl Plugin for WorldPainterPlugin {
         app.add_systems(Startup, (
             spawn_tile.after(init_tile_map),
         ));
+        app.add_systems(PostStartup, use_loaded_world);
     }
 }
+
+// Define a new system in your other class/module
+fn use_loaded_world(worlds: Res<Worlds>) {
+    // Accessing a specific level
+
+    if let Some(level) = worlds.get_level("test_1") {
+        // Accessing specific tiles in layer_0 of Level 1
+        if let Some(tile) = worlds.get_tile_from_layer(&level.name, 0, 0, 0) {
+            println!(
+                "Tile at position ({}, {}) - Instruction: {}, Tileset ID: {}",
+                tile.x, tile.y, tile.instruction, tile.tileset_id
+            );
+        }
+    }
+}
+
 
 fn init_tile_map(mut commands: Commands) {
     commands.insert_resource(TileMap::new());
@@ -30,19 +49,29 @@ pub fn spawn_tile(
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     mut tile_map: ResMut<TileMap>,
+    worlds: Res<Worlds>,
+
 ) {
+
+    let level  = worlds.get_level("test_1").unwrap();
+    let size = level.calculate_size();
+
     let texture_handle = asset_server.load("tileset/Outside.png");
     let texture_atlas = TextureAtlas::from_grid(texture_handle, Vec2::new(32.0, 32.0), 8, 502, None, None);
     let texture_atlas_handle = texture_atlases.add(texture_atlas);
 
+    let mut  num_tiles_to_spawn: usize = size * 8;
+    //num_tiles_to_spawn = level.calculate_size();
+
+
     // Number of tiles to spawn       
-    const NUM_TILES_TO_SPAWN: usize = 65536;
+    
 
     // Scale factor for the grid
     const GRID_SCALE: f64 = 1.6; // Adjust this value to control the overall size of the grid
 
     // Calculate the grid size based on the number of tiles to spawn
-    let mut grid_size = (NUM_TILES_TO_SPAWN as f32).sqrt() as usize;
+    let mut grid_size = (num_tiles_to_spawn as f32).sqrt() as usize;
 
     // Make sure the grid size is even to guarantee the center is in the center of a cell
     if grid_size % 2 != 0 {
@@ -58,7 +87,7 @@ pub fn spawn_tile(
     let mut row = start_row;
     let mut col = start_col;
 
-    for _ in 0..NUM_TILES_TO_SPAWN {
+    for _ in 0..num_tiles_to_spawn {
         let tile_number = rand::thread_rng().gen_range(2..6);
 
         // Check if the position is already occupied
@@ -81,13 +110,15 @@ pub fn spawn_tile(
         let original_position_f32: Vec3 = original_position.into();
         let _position = original_position_f32 * GRID_SCALE as f32;
 
+        
         commands.spawn(SpriteSheetBundle {
             texture_atlas: texture_atlas_handle.clone(),
             sprite: TextureAtlasSprite::new(tile_number),
-            transform: Transform::from_translation(original_position_f32)
-                .mul_transform(Transform::from_scale(Vec3::splat(GRID_SCALE as f32))),// Set the sprite size based on the tile size
+            transform: GlobalTransform::from_translation(original_position_f32)
+                .mul_transform(Transform::from_scale(Vec3::splat(GRID_SCALE as f32))).into(),// Set the sprite size based on the tile size
             ..Default::default()
         });
+
 
         col += 1;
         if col >= grid_size {
@@ -98,7 +129,9 @@ pub fn spawn_tile(
             row = 0;
         }
     }
+
 }
+
 
 pub fn calculate_position(row: usize, col: usize, grid_size: usize, tile_size: f64) -> Vec3 {
     let half_grid_size = grid_size as f64 / 2.0;

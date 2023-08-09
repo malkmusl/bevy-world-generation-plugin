@@ -18,11 +18,12 @@ pub struct WorldPlugin;
 impl Plugin for WorldPlugin {
     fn build(&self, app: &mut App) {
         warn!("Initialize: WorldPlugin");
+        let _worlds = Worlds::new();
         app.add_plugins((
             WorldLoaderPlugin,
             WorldPainterPlugin,
         ));
-        app.init_resource::<Worlds>()  // Add the Arc to Bevy's App resources
+        app.init_resource::<Worlds>().insert_resource(_worlds)  // Add the Arc to Bevy's App resources
             .add_systems(PreStartup, test_world);
     }
 }
@@ -30,6 +31,8 @@ impl Plugin for WorldPlugin {
 pub struct Worlds {
     data: RwLock<HashMap<String, Level>>,
 }
+
+
 #[allow(unused_variables)]
 #[allow(dead_code)]
 impl Worlds {
@@ -119,7 +122,7 @@ impl Worlds {
 }
 
 
-fn test_world() {
+pub fn test_world(worlds: Res<Worlds>) {
     // Create some sample LevelTiles for each LevelLayer
     let level_tile_0_0 = LevelTile {
         x: 0,
@@ -160,7 +163,7 @@ fn test_world() {
 
     // Create a Level and insert it into the worlds hashmap
     let level1 = Level {
-        name: "Level 1".to_string(),
+        name: "test_1".to_string(),
         layer_0,
         layer_1,
         layer_2: LevelLayer { tiles: vec![] }, // You can add more tiles here for the third layer if needed
@@ -186,19 +189,18 @@ fn test_world() {
     };
 
     let level2 = Level {
-        name: "Level 2".to_string(),
+        name: "test_2".to_string(),
         layer_0: LevelLayer { tiles: vec![] }, // You can add more tiles here for the first layer if needed
         layer_1: LevelLayer { tiles: vec![] }, // You can add more tiles here for the second layer if needed
         layer_2,
     };
 
     // Insert the levels into the worlds hashmap
-    let worlds = Worlds::new();
     worlds.insert_level(level1);
     worlds.insert_level(level2);
 
     // Accessing a specific level
-    if let Some(level) = worlds.get_level("Level 1") {
+    if let Some(level) = worlds.get_level("test_1") {
         // Accessing specific tiles in layer_0 of Level 1
         if let Some(tile) = worlds.get_tile_from_layer(&level.name, 0, 0 , 0) {
             println!(
