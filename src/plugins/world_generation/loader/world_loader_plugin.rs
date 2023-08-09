@@ -1,6 +1,9 @@
-use std::fs::File;
+use std::fs::{File, self};
 use std::io::{BufRead, BufReader};
 use bevy::prelude::*;
+
+use crate::plugins::world_generation::level_plugin::{Level, LevelLayer, LevelTile};
+use crate::plugins::world_generation::world_plugin::Worlds;
 
 
 
@@ -10,13 +13,10 @@ pub struct WorldLoaderPlugin;
 impl Plugin for WorldLoaderPlugin  {
     fn build(&self, app: &mut App) {
         warn!("Initialize: WorldLoaderPlugin");
-        app.add_systems(PreStartup, init_worlds);
+        app.init_resource::<Worlds>().add_systems(PreStartup, init_worlds);
     }
 }
 
-fn init_worlds(){
-    read_map("test", 16, 16);
-}
 
 fn read_instructions(file_path: &str) -> Vec<(String, usize, usize, String, String)> {
     let mut instructions: Vec<(String, usize, usize, String, String)> = Vec::new();
@@ -31,7 +31,7 @@ fn read_instructions(file_path: &str) -> Vec<(String, usize, usize, String, Stri
     let reader = BufReader::new(file);
     for (y_pos, line) in reader.lines().enumerate() {
         if let Ok(data) = line {
-            //println!("Line {}: {}", y_pos, data);
+            println!("Line {}: {}", y_pos, data);
             let mut x = 0; // Reset x for each new line
             for item in data.split('$') {
                 if !item.is_empty() {
@@ -55,24 +55,20 @@ fn extract_instruction_tile_id(cell_data: &str, x: usize, y: usize) -> Option<(S
             let instruction = &cleaned_cell_data[opening_bracket_index + 1..opening_bracket_index + closing_bracket_index];
             let rest = &cleaned_cell_data[closing_bracket_index + opening_bracket_index + 1..].trim();
             let tile_id = if rest.is_empty() { "".to_string() } else { rest.to_string() };
-            /*
             println!(
-                "Extracted: x={}, y={}, instruction={}, tile_id={}",
+                "Loop1 Extracted: x={}, y={}, instruction={}, tile_id={}",
                 x, y, instruction, tile_id
             );
-            */
             return Some((instruction.to_string(), tile_id));
         }
     } else if let Some(closing_bracket_index) = cleaned_cell_data.find(')') {
         let instruction = &cleaned_cell_data[..closing_bracket_index];
         let rest = &cleaned_cell_data[closing_bracket_index + 1..].trim();
         let tile_id = if rest.is_empty() { "".to_string() } else { rest.to_string() };
-        /*
         println!(
-            "Extracted: x={}, y={}, instruction={}, tile_id={}",
+            "Loop2 Extracted: x={}, y={}, instruction={}, tile_id={}",
             x, y, instruction, tile_id
         );
-        */
         return Some((instruction.to_string(), tile_id));
     }
 
@@ -81,49 +77,47 @@ fn extract_instruction_tile_id(cell_data: &str, x: usize, y: usize) -> Option<(S
 }
 
 
-pub fn read_map(world_name: &str, x: usize, y: usize) {
-    //let mut unique_hash_map = UniqueHashMap::new(1000000);
 
-    for i in 0..3 {
-        let file_path = format!("assets/maps/{}/{}.map", world_name, i);
-        let instructions = read_instructions(&file_path);
+fn init_worlds(worlds: ResMut<Worlds>) {
+    let map_path = "assets/maps/";
 
-        if instructions.is_empty() {
-            error!("Failed to read instructions for map: {} Level: {}", world_name, i);
-            continue;
-        }
+    if let Ok(entries) = fs::read_dir(map_path) {
+        for entry in entries {
+            if let Ok(entry) = entry {
+                if entry.file_type().map_or(false, |ft| ft.is_dir()) {
+                    if let Some(level_name) = entry.file_name().to_str() {
+                        let mut level = Level::new(level_name.to_string(), LevelLayer::default(), LevelLayer::default(), LevelLayer::default());
+                        for i in 0..3 {
+                            let file_path = format!("{}/{}/{}/{}.map", map_path, level_name, i, i);
+                            warn!("Map found at: {}", file_path);
+                            if !std::path::Path::new(&file_path).exists() {
+                                continue; // Skip if the file does not exist
+                            }
+                            let instructions = read_instructions(&file_path);
 
-        warn!("Instructions for {} World {}: ", world_name, i);
+                            let mut layer = LevelLayer::default();
+                            for y1 in 0..16 {
+                                for x1 in 0..16 {
+                                    // ... (Rest of the tile loading logic remains the same)
 
-        for y1 in 0..y
-         {
-            for x1 in 0..x {
-                let _pos = format!("{}x{}", x1, y1);
-                let mut _extract_instruction_tile_id = "".to_string();
-                /*
-                for (instruction, pos, _tile_code, tile_id, _timestamp) in &instructions {
-                    
-                    
-                    unique_hash_map.insert(
-                        world_name.clone().to_string(),
-                        pos.clone().to_string(),
-                        i.clone().to_string(),
-                        instruction.clone().to_string(),
-                        tile_id.clone().to_string(),
-                    );
-                    extract_instruction_tile_id = instruction.clone().to_string();
+                                    for (instruction, _pos, _tile_code, tile_id, _timestamp) in &instructions {
+                                        layer.add_tile(LevelTile::new(x1, y1, instruction.clone(), tile_id.clone()));
+                                        info!("    pos = {}x{} instruction = {}", x1 ,y1 , instruction.clone().to_string());
+                                    }
+                                }
+                            }
+
+                            match i {
+                                0 => level.set_layer_0(layer),
+                                1 => level.set_layer_1(layer),
+                                2 => level.set_layer_2(layer),
+                                _ => (),
+                            }
+                        }
+                        worlds.insert_level(level);
+                    }
                 }
-                info!("    pos = {} instruction = {}", _pos, extract_instruction_tile_id);
-                 */
             }
         }
     }
-
-    //let ins = unique_hash_map.get_instructions_from_map(world_name, "1x1", "0");
-    //warn!("{:?}", ins);
-    // Print all entries in the UniqueHashMap
-    //unique_hash_map.print_entries();
-
-    // Write debug file
-    //write_debug_file(world_name, &unique_hash_map);
 }

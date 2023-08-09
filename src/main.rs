@@ -13,7 +13,7 @@ fn main() {
         .set(WindowPlugin {
             primary_window: Some(Window {
                 title: "Pokemon Multiplayer".into(),
-                resolution: (1920.0, 1080.0).into(),
+                resolution: (854.0, 480.0).into(),
                 resizable: true,
                 ..default()
                 }),

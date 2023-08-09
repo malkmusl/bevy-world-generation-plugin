@@ -17,7 +17,7 @@ impl Plugin for WorldPainterPlugin {
         app.add_systems(PreStartup,(
             init_tile_map,
             ));
-        app.add_systems(Startup, (
+        app.init_resource::<Worlds>().add_systems(Startup, (
             spawn_tile.after(init_tile_map),
         ));
         app.add_systems(PostStartup, use_loaded_world);
@@ -28,7 +28,7 @@ impl Plugin for WorldPainterPlugin {
 fn use_loaded_world(worlds: Res<Worlds>) {
     // Accessing a specific level
 
-    if let Some(level) = worlds.get_level("test_1") {
+    if let Some(level) = worlds.get_level("test") {
         // Accessing specific tiles in layer_0 of Level 1
         if let Some(tile) = worlds.get_tile_from_layer(&level.name, 0, 0, 0) {
             println!(
@@ -53,14 +53,15 @@ pub fn spawn_tile(
 
 ) {
 
-    let level  = worlds.get_level("test_1").unwrap();
+    let level  = worlds.get_level("test").unwrap();
     let size = level.calculate_size();
 
     let texture_handle = asset_server.load("tileset/Outside.png");
     let texture_atlas = TextureAtlas::from_grid(texture_handle, Vec2::new(32.0, 32.0), 8, 502, None, None);
     let texture_atlas_handle = texture_atlases.add(texture_atlas);
 
-    let mut  num_tiles_to_spawn: usize = size * 8;
+    //+ 256x256 = 65536
+    let num_tiles_to_spawn: usize = size;
     //num_tiles_to_spawn = level.calculate_size();
 
 

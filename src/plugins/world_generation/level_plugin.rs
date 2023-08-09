@@ -65,7 +65,7 @@ impl Level {
 }
 
 
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct LevelLayer {
     pub tiles: Vec<LevelTile>,
 }
