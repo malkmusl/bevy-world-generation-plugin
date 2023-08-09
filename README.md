@@ -1,8 +1,8 @@
-# Project Name
+# Bevy World Generation Plugin
 
-[![Malkmusl's Open Source License Agreement v1.0](https://img.shields.io/badge/License-Malkmusl's%20Open%20Source%20License%20Agreement%20v1.0-brightgreen.svg?style=for-the-badge)](LICENSE.md)
+[![Malkmusl's Open Source License Agreement v1.3](https://img.shields.io/badge/License-Malkmusl's%20Open%20Source%20License%20Agreement%20v1.0-brightgreen.svg?style=for-the-badge)](LICENSE.md)
 
-![Languages Badge](https://img.shields.io/badge/Languages-818080?style=for-the-badge)  ![Flutter Badge](https://img.shields.io/badge/Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white)  ![Dart Badge](https://img.shields.io/badge/Dart-0175C2?style=for-the-badge&logo=dart&logoColor=white)  ![Rust Badge](https://img.shields.io/badge/Rust-000000?style=for-the-badge&logo=rust&logoColor=white)
+![Languages Badge](https://img.shields.io/badge/Languages-818080?style=for-the-badge)  ![Rust Badge](https://img.shields.io/badge/Rust-000000?style=for-the-badge&logo=rust&logoColor=white)
 
 [![Buy me a coffee on Ko-fi](https://img.shields.io/badge/Buy%20me%20a%20coffee-Ko--fi-%23FF5E5B.svg?style=for-the-badge)](https://ko-fi.com/malkmusl)  [![Support me on Patreon](https://img.shields.io/badge/Support%20me%20on-Patreon-orange.svg?style=for-the-badge)](https://www.patreon.com/your_username)
 
@@ -21,15 +21,15 @@
 
 ## Project Overview
 
-Provide a concise overview of your project, including its purpose and any important details. Explain what problem it solves or what it aims to achieve.
+This is the basic World Generation implementation of my Harvard Exam Game feel free to use and modify the code
 
 ## Features
 
-List the key features and functionalities of your project. You can use bullet points or create sub-sections for each feature.
+Implements the basic rendering and loading of a tileset based 2D game loads the world and levels from .map files in 3 layers
 
 ## Installation
 
-Outline the steps required to install and set up your project. Include any dependencies or prerequisites that need to be installed. You can provide code snippets or commands to guide the users through the installation process.
+To use the plugin copy the world_generation folder in src/plugins to your project and make some small ajustments to fit the code in your project
 
 ## Usage
 
