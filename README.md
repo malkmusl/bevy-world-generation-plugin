@@ -1,6 +1,6 @@
 # Bevy World Generation Plugin
 
-[![Malkmusl's Open Source License Agreement v1.3](https://img.shields.io/badge/License-Malkmusl's%20Open%20Source%20License%20Agreement%20v1.0-brightgreen.svg?style=for-the-badge)](LICENSE.md)
+[![Malkmusl's Open Source License Agreement v1.3](https://img.shields.io/badge/License-Malkmusl's%20Open%20Source%20License%20Agreement%20v1.3-brightgreen.svg?style=for-the-badge)](LICENSE.md)
 
 ![Languages Badge](https://img.shields.io/badge/Languages-818080?style=for-the-badge)  ![Rust Badge](https://img.shields.io/badge/Rust-000000?style=for-the-badge&logo=rust&logoColor=white)
 
